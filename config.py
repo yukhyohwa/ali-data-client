@@ -1,5 +1,9 @@
 # config.py
 import os
+from dotenv import load_dotenv
+
+# 加载 .env 文件中的环境变量
+load_dotenv()
 
 # 凭据配置：根据环境和引擎分类
 # 建议将敏感信息配置在系统环境变量中，避免硬编码在代码里泄露

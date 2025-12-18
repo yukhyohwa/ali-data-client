@@ -1,0 +1,3 @@
+cd /d "C:\Users\5xgames\Desktop\Code Library\alicloud"
+
+python main.py --env overseas --engine odps --sql_file test.sql
