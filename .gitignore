@@ -1,0 +1,16 @@
+# Python 缓存文件
+__pycache__/
+*.py[cod]
+
+# 忽略输出的数据文件 (非常重要)
+output/
+*.csv
+*.xlsx
+*.txt
+
+# IDE 配置文件
+.vscode/
+.idea/
+
+# 环境变量文件 (如果以后用的话)
+.env
