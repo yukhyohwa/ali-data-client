@@ -6,7 +6,7 @@ __pycache__/
 output/
 *.csv
 *.xlsx
-*.md
+# *.md (removed to allow documentation)
 
 # IDE 配置文件
 .vscode/

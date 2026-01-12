@@ -45,6 +45,12 @@
 
 ## Usage / 使用方法
 
+### Core Command (Recommended) / 核心命令 (推荐)
+**This is the most common use case for querying overseas data using a SQL file:**
+```bash
+python main.py --env overseas --engine odps --sql_file my_query.sql
+```
+
 ### 1. Default Query (ODPS - CN)
 Execute the default SQL defined in `config.py`.
 ```bash
