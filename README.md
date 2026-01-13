@@ -8,63 +8,73 @@
 
 ## Features / 功能
 
-1.  **Multi-Engine Support**: Query data from **ODPS** and **Hologres**.
-2.  **Environment Switching**: Easily toggle between China (cn) and Overseas environments.
-3.  **SQl File Support**: Execute queries from external `.sql` files.
-4.  **Data Persistence**: Export query results to local files (CSV, Excel, TXT).
-5.  **Interactive CLI**: Simple command-line interface for ease of use.
+1. **Multi-Engine Support**: Query data from **ODPS** and **Hologres**.
+2. **Environment Switching**: Easily toggle between China (cn) and Overseas environments.
+3. **SQl File Support**: Execute queries from external `.sql` files.
+4. **Data Persistence**: Export query results to local files (CSV, Excel, TXT).
+5. **Interactive CLI**: Simple command-line interface for ease of use.
 
 ## Requirements / 依赖
 
-*   Python 3.x
-*   `odps` (PyODPS)
-*   `psycopg2` (For Hologres connection)
-*   `access` credentials (AK/SK)
+* Python 3.x
+* `odps` (PyODPS)
+* `psycopg2` (For Hologres connection)
+* `access` credentials (AK/SK)
 
 ## Installation / 安装
 
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/yukhyohwa/ali-data-client.git
-    cd ali-data-client
-    ```
+1. **Clone the repository**:
 
-2.  **Install dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
-    *(Note: If `requirements.txt` is missing, manual install via `pip install pyodps psycopg2 pandas argparse openpyxl`)*
+   ```bash
+   git clone https://github.com/yukhyohwa/ali-data-client.git
+   cd ali-data-client
+   ```
+2. **Install dependencies**:
 
-3.  **Configuration**:
-    *   Set your Alibaba Cloud Access Key (AK) and Secret Key (SK) in environment variables or `config.py`.
-    *   Example using environment variables (Recommended):
-        ```bash
-        export ALIYUN_AK_CN="your_ak_cn"
-        export ALIYUN_SK_CN="your_sk_cn"
-        ```
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+   *(Note: If `requirements.txt` is missing, manual install via `pip install pyodps psycopg2 pandas argparse openpyxl`)*
+3. **Configuration**:
+
+   * Set your Alibaba Cloud Access Key (AK) and Secret Key (SK) in environment variables or `config.py`.
+   * Example using environment variables (Recommended):
+     ```bash
+     export ALIYUN_AK_CN="your_ak_cn"
+     export ALIYUN_SK_CN="your_sk_cn"
+     ```
 
 ## Usage / 使用方法
 
 ### Core Command (Recommended) / 核心命令 (推荐)
+
 **This is the most common use case for querying overseas data using a SQL file:**
+
 ```bash
 python main.py --env overseas --engine odps --sql_file my_query.sql
 ```
 
 ### 1. Default Query (ODPS - CN)
+
 Execute the default SQL defined in `config.py`.
+
 ```bash
 python main.py
 ```
 
 ### 2. Specify Environment & Engine
+
 Query Hologres in the Overseas environment.
+
 ```bash
 python main.py --env overseas --engine holo
 ```
 
 ### 3. Execute SQL from File
+
 Run a specific SQL script.
+
 ```bash
 python main.py --sql_file ./my_query.sql
 ```
