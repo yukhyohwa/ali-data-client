@@ -14,3 +14,5 @@ output/
 
 # 环境变量文件 (如果以后用的话)
 .env
+
+my_query.sql
