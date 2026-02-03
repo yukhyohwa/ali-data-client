@@ -6,22 +6,22 @@
 
 **Ali Data Client** is a command-line tool designed to simplify data querying and retrieval from Alibaba Cloud's **ODPS (MaxCompute)** and **Hologres** engines. It supports switching between environments (Domestic/Overseas) and engines seamlessly, allowing users to export results directly to CSV, Excel, or TXT formats.
 
-## Features / 功能
+## Features
 
 1. **Multi-Engine Support**: Query data from **ODPS** and **Hologres**.
 2. **Environment Switching**: Easily toggle between China (cn) and Overseas environments.
-3. **SQl File Support**: Execute queries from external `.sql` files.
+3. **SQL File Support**: Execute queries from external `.sql` files.
 4. **Data Persistence**: Export query results to local files (CSV, Excel, TXT).
 5. **Interactive CLI**: Simple command-line interface for ease of use.
 
-## Requirements / 依赖
+## Requirements
 
 * Python 3.x
 * `odps` (PyODPS)
 * `psycopg2` (For Hologres connection)
-* `access` credentials (AK/SK)
+* Access credentials (AK/SK)
 
-## Installation / 安装
+## Installation
 
 1. **Clone the repository**:
 
@@ -35,7 +35,8 @@
    pip install -r requirements.txt
    ```
 
-   *(Note: If `requirements.txt` is missing, manual install via `pip install pyodps psycopg2 pandas argparse openpyxl`)*
+   *(Note: If `requirements.txt` is missing, manually install via `pip install pyodps psycopg2 pandas argparse openpyxl`)*
+
 3. **Configuration**:
 
    * Set your Alibaba Cloud Access Key (AK) and Secret Key (SK) in environment variables or `config.py`.
@@ -45,9 +46,9 @@
      export ALIYUN_SK_CN="your_sk_cn"
      ```
 
-## Usage / 使用方法
+## Usage
 
-### Core Command (Recommended) / 核心命令 (推荐)
+### Core Command
 
 **This is the most common use case for querying overseas data using a SQL file:**
 
@@ -79,7 +80,7 @@ Run a specific SQL script.
 python main.py --sql_file ./my_query.sql
 ```
 
-## Project Structure / 项目结构
+## Project Structure
 
 ```text
 ali-data-client/
