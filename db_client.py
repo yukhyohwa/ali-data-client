@@ -27,8 +27,11 @@ class DataEngine:
         o = ODPS(self.conf['access_id'], self.conf['access_key'], 
                  self.conf['project'], endpoint=self.conf['endpoint'])
         
+        # 为支持多语句执行，添加 script mode 提示
+        hints = {"odps.sql.submit.mode": "script"}
+        
         print("[*] 正在执行 ODPS 查询 (Reader模式)...")
-        with o.execute_sql(sql).open_reader() as reader:
+        with o.execute_sql(sql, hints=hints).open_reader() as reader:
             return reader.to_pandas()
 
     def _query_holo(self, sql):
