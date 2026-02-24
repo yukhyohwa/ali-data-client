@@ -17,7 +17,9 @@ console = Console()
 def get_engine(engine_name, region="china"):
     if engine_name == "ta":
         from src.core.ta_engine import ThinkingDataEngine
-        return ThinkingDataEngine()
+        config = settings.TA_CREDENTIALS.get(region)
+        if not config: raise ValueError(f"No TA config for region: {region}")
+        return ThinkingDataEngine(config)
     
     elif engine_name == "odps":
         from src.core.ali_engine import ODPSEngine

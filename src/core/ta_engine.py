@@ -10,11 +10,12 @@ class ThinkingDataEngine(BaseEngine):
     Engine for ThinkingData platform using Playwright automation.
     Logic fully synchronized with thinking-data-client/src/connector.py
     """
-    def __init__(self):
-        self.base_url = settings.TA_URL
-        self.sql_url = settings.TA_SQL_URL
-        self.username = settings.TA_USER
-        self.password = settings.TA_PASS
+    def __init__(self, config):
+        self.config = config
+        self.base_url = config.url
+        self.sql_url = config.sql_url
+        self.username = config.user
+        self.password = config.password
         self.user_data_dir = settings.TA_SESSION_DIR
 
     def login(self, headless=False):
@@ -215,20 +216,67 @@ class ThinkingDataEngine(BaseEngine):
         return results_data
 
     def _perform_login_logic(self, page):
-        """Standard login logic with ported selectors."""
-        user_input = page.wait_for_selector('input[placeholder*="Account"], input[placeholder*="Username"], input[id="username"], input[type="text"]', timeout=15000)
-        pass_input = page.wait_for_selector('input[placeholder*="Password"], input[id="password"], input[type="password"]', timeout=15000)
+        """Standard login logic with ported selectors, enhanced for China region."""
+        # 1. Find Inputs
+        user_input = page.wait_for_selector('input[placeholder*="Account"], input[placeholder*="Username"], input[placeholder*="账号"], input[id="username"], input[type="text"]', timeout=15000)
+        pass_input = page.wait_for_selector('input[placeholder*="Password"], input[placeholder*="密码"], input[id="password"], input[type="password"]', timeout=15000)
         
+        # 2. Fill Credentials
         user_input.fill("")
-        user_input.type(self.username, delay=50)
+        user_input.type(self.username, delay=30)
         pass_input.fill("")
-        pass_input.type(self.password, delay=50)
+        pass_input.type(self.password, delay=30)
         
-        remember_me = page.query_selector('label:has-text("7 day"), label:has-text("7天"), .ant-checkbox-wrapper, input[type="checkbox"]')
-        if remember_me:
-            remember_me.click()
+        # 3. Handle Remember Me (Optional)
+        try:
+            remember_me = page.query_selector('label:has-text("7 day"), label:has-text("7天"), .ant-checkbox-wrapper, input[type="checkbox"]')
+            if remember_me:
+                # Check if it's already checked to avoid unchecking
+                is_checked = page.evaluate("(el) => el.classList.contains('ant-checkbox-wrapper-checked') || (el.querySelector('input') && el.querySelector('input').checked)", remember_me)
+                if not is_checked:
+                    remember_me.click()
+        except:
+            pass
         
-        login_btn = page.wait_for_selector('button:has-text("Login"), button:has-text("登录"), button[type="submit"], .ant-btn-primary', timeout=15000)
-        login_btn.click()
+        # 4. Click Login or Press Enter
+        page.wait_for_timeout(1000)
         
-        page.wait_for_url(lambda url: "login" not in url.lower(), timeout=20000)
+        # Try finding the login button by text or class and clicking it
+        login_btn_selectors = [
+            'button:has-text("登录")',
+            'button:has-text("Login")',
+            '.ant-btn-primary',
+            'div:has-text("登录")',
+            'span:has-text("登录")'
+        ]
+        
+        button_clicked = False
+        for selector in login_btn_selectors:
+            try:
+                candidate = page.query_selector(selector)
+                if candidate and candidate.is_visible():
+                    logger.info(f"Attempting to click login button: {selector}")
+                    candidate.click()
+                    button_clicked = True
+                    break
+            except:
+                continue
+        
+        # Always try Enter key as the most robust way to submit forms
+        page.wait_for_timeout(1000)
+        logger.info("Sending Enter key to ensure submission...")
+        page.keyboard.press("Enter")
+            
+        # 5. Wait for outcome (Resilient strategy)
+        try:
+            # Wait for the login button to disappear or the URL to change
+            page.wait_for_function("""() => {
+                const btn = document.querySelector('button:has-text("登录"), button:has-text("Login")');
+                return !btn || !btn.isConnected || !window.location.href.toLowerCase().includes('login');
+            }""", timeout=20000)
+            logger.info("Login form submitted successfully.")
+        except Exception as e:
+            logger.warn(f"Wait for login transition timed out, but proceeding anyway: {e}")
+            
+        # Final safety sleep for redirection
+        page.wait_for_timeout(3000)

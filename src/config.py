@@ -16,6 +16,13 @@ class DBConfig:
     user: str = ""
     password: str = ""
 
+@dataclass
+class TAConfig:
+    url: str = ""
+    sql_url: str = ""
+    user: str = ""
+    password: str = ""
+
 class Settings:
     # --- AliCloud Credentials ---
     ALI_CREDENTIALS = {
@@ -56,10 +63,21 @@ class Settings:
     }
 
     # --- ThinkingData Credentials ---
-    TA_URL = os.getenv("TA_URL", "http://8.211.141.76:8993/")
-    TA_USER = os.getenv("TA_USER", "")
-    TA_PASS = os.getenv("TA_PASS", "")
-    TA_SQL_URL = os.getenv("TA_SQL_URL", f"{TA_URL}#/tga/ide/-1")
+    TA_CREDENTIALS = {
+        'china': TAConfig(
+            url=os.getenv("TA_URL_CN", "https://ss-web.5xgames.cn/"),
+            sql_url=os.getenv("TA_SQL_URL_CN", "https://ss-web.5xgames.cn/#/tga/ide/-1"),
+            user=os.getenv("TA_USER_CN", ""),
+            password=os.getenv("TA_PASS_CN", "")
+        ),
+        'global': TAConfig(
+            url=os.getenv("TA_URL_GLOBAL", "http://8.211.141.76:8993/"),
+            sql_url=os.getenv("TA_SQL_URL_GLOBAL", "http://8.211.141.76:8993/#/tga/ide/-1"),
+            user=os.getenv("TA_USER_GLOBAL", ""),
+            password=os.getenv("TA_PASS_GLOBAL", "")
+        )
+    }
+    
     TA_SESSION_DIR = os.path.abspath(os.getenv("USER_DATA_DIR", "./ta_session"))
 
     # --- Email Config ---
