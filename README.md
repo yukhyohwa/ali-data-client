@@ -11,11 +11,23 @@ A powerful and unified data extraction framework for ThinkingData (TA), AliCloud
 
 ## 🌟 Key Features
 
-- **Multi-Engine Support**: ThinkingData (Global & China), AliCloud MaxCompute, and Hologres.
-- **Unified Logic**: One client for all company data platforms.
-- **Private SQL Library**: Securely integrated via Git Submodules (keeps business logic separate from tool code).
-- **One-Click Setup**: Automated environment initialization for local and containerized environments.
-- **Intelligent Export**: Automatic format conversion (Excel, CSV, JSON) and email delivery.
+- **Multi-Engine Support**: 
+  - `ta`: ThinkingData (Supports **China** and **Global** regions with auto-login).
+  - `odps`: AliCloud MaxCompute (Supports China and Global regions).
+  - `holo`: AliCloud Hologres (Postgres-compatible).
+- **Intelligent Emailing**: 
+  - Send reports with multiple attachments to multiple recipients.
+  - Parse recipients directly from SQL comments (`-- MAILTO: ...`).
+- **Flexible Workflows**:
+  - **Scheduled Tasks**: Define multiple queries in a single JSON file and run them all at once.
+  - **Ad-hoc Queries**: Powerful CLI for single queries with data preview.
+- **Advanced Export (xlsx, csv, txt, json)**:
+  - Automatic format conversion for raw downloads (e.g., TA's CSV to Excel).
+- **Robustness**:
+  - Playwright-based smart login for TA (Auto-fill + Enter fallback).
+  - Session persistence via persistent browser context.
+- **Private SQL Library**: Securely integrated via Git Submodules.
+- **One-Click Setup**: Automated environment initialization.
 
 ## 🛠 Setup & Initialization
 
@@ -27,36 +39,29 @@ We provide a one-click setup script to handle Python VENV, dependencies, and Pla
     cd fivecross-data-client
     ```
 2.  **Run Setup**:
-    Double-click `setup.bat` or run:
-    ```powershell
-    .\setup.bat
-    ```
-3.  **Configure Credentials**:
-    Edit the newly created `.env` file with your platform credentials.
+    Double-click `setup.bat` or run `.\setup.bat`.
+3.  **Configure `.env`**:
+    - **ThinkingData**: Set `TA_USER_CN`/`TA_PASS_CN` or `TA_USER_GLOBAL`/`TA_PASS_GLOBAL`.
+    - **AliCloud**: Set `ALIYUN_AK_CN`/`ALIYUN_SK_CN` and endpoint variables.
+    - **Email**: Configure `SMTP_SERVER`, `SENDER_EMAIL`, and `SENDER_PASSWORD` (App Password).
 
 ### 2. Docker (Containerized)
 Ideal for scheduled tasks on Linux servers.
 ```bash
-# Build
 docker build -t fivecross-client .
-
-# Run
 docker run --env-file .env fivecross-client --engine ta --sql "SELECT ..."
 ```
 
-## 📂 Project Structure
-
-- `src/core/`: Engine logic (TA, ODPS, Holo).
-- `queries/sql-lib/`: **[Private Submodule]** The shared internal SQL library.
-- `ta_session/`: Local browser session storage (ignored by git).
-- `output/`: Generated reports and debug snapshots.
-- `setup.bat`: One-click initialization script.
-- `Dockerfile`: Container definition.
-
 ## 📖 Usage
 
-### Ad-hoc Queries
+### 1. Ad-hoc Queries (IDE & CLI)
 ```bash
+# ThinkingData (Default: Global)
+python main.py --engine ta --region global --file queries/adhoc_ta.sql
+
+# AliCloud ODPS (Default: Global)
+python main.py --engine odps --region global --file queries/adhoc_ali.sql
+
 # Using the integrated SQL library
 python main.py --engine ta --file queries/sql-lib/games/slam_dunk/maxcompute/active_users.sql
 
@@ -64,21 +69,46 @@ python main.py --engine ta --file queries/sql-lib/games/slam_dunk/maxcompute/act
 python main.py --engine odps --sql "SELECT count(*) FROM ods_log_login WHERE day='20240101'"
 ```
 
-### Log Seeker (Tool)
-Quickly locate specific IDs within massive local CSV logs:
-```bash
-# Search for specific IDs in the latest download
-python tools/log_seek.py 78128243 90000730
-
-# Search in a specific file
-python tools/log_seek.py 78128243 --path output/my_huge_log.csv
+### 2. Scheduled Multi-Tasks & Automation
+Edit `tasks/scheduled_multi_tasks.json` to define your suite of reports:
+```json
+[
+  {
+    "name": "Daily_China_Stats",
+    "engine": "ta", "region": "china",
+    "file": "queries/daily_stats.sql",
+    "mailto": "boss@example.com",
+    "formats": ["xlsx"]
+  }
+]
 ```
-
-### Scheduled Multi-Tasks
-Edit `tasks/scheduled_multi_tasks.json` and run:
+**Trigger the tasks:**
 ```bash
+# Windows
+.\scripts\run_query.bat
+
+# Manual
 python main.py --task tasks/scheduled_multi_tasks.json
 ```
+
+### 3. Log Seeker (Tool)
+Quickly locate specific IDs within massive local CSV logs:
+```bash
+python tools/log_seek.py 78128243 90000730
+```
+
+## ⚙️ CLI Arguments
+| Argument | Description | Options |
+| :--- | :--- | :--- |
+| `--engine` | Output target engine | `ta`, `odps`, `holo` |
+| `--region` | Target region | `china`, `global` (Default) |
+| `--file` | Path to SQL file | e.g. `queries/adhoc.sql` |
+| `--sql` | Direct SQL string | Any valid SQL |
+| `--task` | Multi-task JSON path | e.g. `tasks/daily.json` |
+| `--mailto` | Recipient emails | Comma separated |
+| `--formats` | Export formats | `xlsx`, `csv`, `txt`, `json` |
+| `--show` | Display browser | TA engine only |
+| `--login` | Force login flow | TA engine only |
 
 ## 🔒 Security & Privacy
 - **.env**: Never committed to Git. Local credentials stay local.
@@ -91,3 +121,10 @@ Add recipients directly in your SQL files:
 SELECT * FROM ...
 ```
 
+## 📂 Project Structure
+- `src/core/`: Engine logic (TA, ODPS, Holo).
+- `src/utils/`: Exporter, Mailer, and Logger utilities.
+- `queries/sql-lib/`: **[Private Submodule]** The shared internal SQL library.
+- `tools/`: Built-in utilities (Log Seeker, etc.).
+- `output/`: Generated reports and debug snapshots.
+- `setup.bat`: One-click initialization script.
