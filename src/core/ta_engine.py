@@ -161,26 +161,37 @@ class ThinkingDataEngine(BaseEngine):
                 start_time = time.time()
                 
                 while not results_data and (time.time() - start_time < max_timeout):
-                    # 1. Download check
-                    download_btn = page.query_selector('button:has-text("Download All"), button:has-text("全量下载"), .ant-btn:has-text("全量下载")')
+                    # 1. Aggressive Download detection
+                    download_selectors = ['button:has-text("Download All")', 'button:has-text("全量下载")', '.ant-btn:has-text("全量下载")', 'span:has-text("全量下载")', '.anticon-download', '.anticon-export', '.ide-download-btn']
+                    download_btn = None
+                    for sel in download_selectors:
+                        download_btn = page.query_selector(sel)
+                        if download_btn and download_btn.is_visible(): break
+                    
                     if download_btn:
-                        logger.info("Success! Downloading output...")
-                        with page.expect_download(timeout=60000) as download_info:
+                        if "下载" not in download_btn.inner_text() and "Download" not in download_btn.inner_text():
                             download_btn.click()
-                        download = download_info.value
-                        if not os.path.exists("output"): os.makedirs("output")
-                        download_path = os.path.join("output", download.suggested_filename)
-                        download.save_as(download_path)
-                        results_data.append({"file_path": download_path, "type": "file"})
-                        break
+                            page.wait_for_timeout(2000)
+                            real_btn = page.query_selector('li:has-text("全量下载"), span:has-text("全量下载"), button:has-text("全量下载")')
+                            if real_btn: download_btn = real_btn
+
+                        if download_btn:
+                            logger.info("Success! Starting download...")
+                            with page.expect_download(timeout=120000) as download_info:
+                                download_btn.click()
+                            download = download_info.value
+                            if not os.path.exists("output"): os.makedirs("output")
+                            download_path = os.path.join("output", download.suggested_filename)
+                            download.save_as(download_path)
+                            results_data.append({"file_path": download_path, "type": "file"})
+                            break
 
                     # 2. Progress Feedback
                     status_area = page.query_selector('.ant-tabs-tabpane-active, .ide-results-area')
                     status_text = status_area.inner_text() if status_area else ""
                     
-                    is_running = "查询引擎运行中" in status_text or \
-                                 "已进行" in status_text or \
-                                 page.query_selector('.ant-spin-spinning, .ant-progress-circle')
+                    is_running = any(x in status_text for x in ["查询引擎运行中", "已进行", "查询结果处理中", "处理中", "Executing"]) or \
+                                 page.query_selector('.ant-spin-spinning, .ant-progress-circle, .ant-spin')
                     
                     if is_running:
                         elapsed = int(time.time() - start_time)
@@ -195,13 +206,35 @@ class ThinkingDataEngine(BaseEngine):
                         logger.error(f"SQL failed: {status_text.strip()}")
                         break
 
+                    # 4. Success but waiting for Export button (Common for 100% status or large files)
+                    # If we see 100% or "Processing", wait a significant amount of time
+                    if "100%" in status_text or "处理中" in status_text:
+                        # For 258MB files, UI rendering can be extremely slow.
+                        # We wait in segments to check for the button.
+                        for _ in range(10): # Total extra 20s if needed
+                            download_btn_retry = page.query_selector('button:has-text("Download All"), button:has-text("全量下载"), .ant-btn:has-text("全量下载"), .ide-download-btn, a:has-text("下载")')
+                            if download_btn_retry:
+                                break
+                            page.wait_for_timeout(2000)
+                        
+                        if download_btn_retry:
+                            continue # Re-run loop to hit Download check at #1
+
                     page.wait_for_timeout(3000)
                     
-                    # 4. Idle check
+                    # 5. Idle check
                     calc_ready = page.query_selector('button:has-text("Calculate"), button:has-text("计算")')
                     if calc_ready and calc_ready.is_enabled() and not results_data:
-                        logger.info("IDE idle. No data captured.")
-                        break
+                        # Check for presence of result area even if table isn't fully rendered
+                        result_area = page.query_selector('.ant-tabs-tabpane-active, .ide-results-area, .ant-table-body')
+                        if result_area and ("100%" in status_text or "条结果" in status_text or "Rows" in status_text):
+                             # Looks like it finished but UI is lagging. Wait more.
+                             logger.info("IDE seems finished but UI is lagging. Waiting 5s more...")
+                             page.wait_for_timeout(5000)
+                             continue
+                        else:
+                            logger.info("IDE idle. No data captured.")
+                            break
 
                 if not results_data:
                     if not os.path.exists("output"): os.makedirs("output")

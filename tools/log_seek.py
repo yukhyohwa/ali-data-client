@@ -35,7 +35,7 @@ def main():
     args = parser.parse_args()
     
     # Configuration
-    target_ids = args.ids if args.ids else ['78128243', '90000730'] # Maintain your defaults
+    target_ids = args.ids if args.ids else ['100000000'] # Maintain your defaults
     
     csv_path = args.path
     if not csv_path:
