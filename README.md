@@ -5,8 +5,8 @@ A powerful and unified data extraction framework for ThinkingData (TA), AliCloud
 ## 🌟 Key Features
 
 - **Multi-Engine Support**: 
-  - `ta`: ThinkingData (with auto-login, real-time feedback, and robustness selectors).
-  - `odps`: AliCloud MaxCompute (supports China and Global regions).
+  - `ta`: ThinkingData (Supports **China** and **Global** regions with auto-login).
+  - `odps`: AliCloud MaxCompute (Supports China and Global regions).
   - `holo`: AliCloud Hologres (Postgres-compatible).
 - **Flexible Workflows**:
   - **Scheduled Tasks**: Define multiple queries in a single JSON file and run them all at once.
@@ -18,9 +18,9 @@ A powerful and unified data extraction framework for ThinkingData (TA), AliCloud
   - Send reports with multiple attachments to multiple recipients.
   - Parse recipients directly from SQL comments (`-- MAILTO: ...`).
 - **Robustness**:
-  - Auto-login for ThinkingData sessions.
-  - Debug screenshots on failure.
-  - Efficient Monaco editor injection for ThinkingData.
+  - Smart login mechanism (Auto-fill + Enter fallback) for ThinkingData.
+  - Session persistence via persistent browser context.
+  - Debug screenshots and logs on failure.
 
 ## 🛠 Setup
 
@@ -32,7 +32,8 @@ A powerful and unified data extraction framework for ThinkingData (TA), AliCloud
 
 2. **Configuration**:
    - Create a `.env` file based on `.env.example`.
-   - Ensure `TA_USER`, `TA_PASS`, and AliCloud AK/SK are correctly set.
+   - **ThinkingData**: Set `TA_USER_CN`/`TA_PASS_CN` for China and `TA_USER_GLOBAL`/`TA_PASS_GLOBAL` for Global.
+   - **AliCloud**: Ensure `ALIYUN_AK_CN`/`ALIYUN_SK_CN` and `ALIYUN_AK_OVERSEAS`/`ALIYUN_SK_OVERSEAS` are set.
    - Set `USER_DATA_DIR` to maintain browser sessions.
 
 ## 📖 Usage
@@ -50,8 +51,11 @@ python main.py --task tasks/scheduled_multi_tasks.json
 ### 2. Interactive Ad-hoc Queries
 Run single queries with a **Data Preview** and interactive options for naming and formats:
 ```bash
-# ThinkingData
+# ThinkingData (Default: China)
 python main.py --engine ta --file queries/adhoc_ta.sql
+
+# ThinkingData (Global)
+python main.py --engine ta --region global --file queries/adhoc_ta.sql
 
 # AliCloud ODPS
 python main.py --engine odps --region global --file queries/adhoc_ali.sql
@@ -60,7 +64,7 @@ python main.py --engine odps --region global --file queries/adhoc_ali.sql
 
 ### 3. CLI Arguments
 - `--engine`: [ta, odps, holo]
-- `--region`: [china, global]
+- `--region`: [china, global] (Default: china)
 - `--file`: Path to SQL file.
 - `--sql`: Direct SQL string.
 - `--mailto`: Recipient emails (comma separated).
@@ -73,11 +77,19 @@ Tasks are defined in `tasks/scheduled_multi_tasks.json`:
 ```json
 [
   {
-    "name": "Daily_TA_Stats",
+    "name": "Daily_China_Stats",
     "engine": "ta",
+    "region": "china",
     "file": "queries/daily_stats.sql",
     "mailto": "boss@example.com",
-    "formats": ["xlsx", "csv"]
+    "formats": ["xlsx"]
+  },
+  {
+    "name": "Daily_Global_Stats",
+    "engine": "ta",
+    "region": "global",
+    "file": "queries/global_stats.sql",
+    "formats": ["csv"]
   }
 ]
 ```
