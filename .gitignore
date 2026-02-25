@@ -48,7 +48,8 @@ output/
 # Ignore actual adhoc scripts used for execution
 queries/adhoc_ta.sql
 queries/adhoc_ali.sql
-queries/find_event.sql
+queries/find_event_ali.sql
+queries/find_event_ta.sql
 
 # --- Task Configuration ---
 tasks/*.json
