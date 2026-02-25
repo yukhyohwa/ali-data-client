@@ -39,7 +39,7 @@ def main():
     
     csv_path = args.path
     if not csv_path:
-        output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "output")
+        output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "output")
         csv_path = find_latest_csv(output_dir)
         if not csv_path:
             # Check local queries mapping or examples

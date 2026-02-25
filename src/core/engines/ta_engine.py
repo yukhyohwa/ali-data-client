@@ -1,14 +1,14 @@
 import os
 import time
 from playwright.sync_api import sync_playwright
-from src.core.base_engine import BaseEngine
+from src.core.engines.base_engine import BaseEngine
 from src.utils.logger import logger
 from src.config import settings
 
 class ThinkingDataEngine(BaseEngine):
     """
     Engine for ThinkingData platform using Playwright automation.
-    Logic fully synchronized with thinking-data-client/src/connector.py
+    Logic fully synchronized with optimized backup version.
     """
     def __init__(self, config):
         self.config = config
@@ -19,9 +19,6 @@ class ThinkingDataEngine(BaseEngine):
         self.user_data_dir = settings.TA_SESSION_DIR
 
     def login(self, headless=False):
-        """
-        Executes login flow. Strictly following old project's logic.
-        """
         if not self.username or not self.password:
             logger.error("TA credentials missing.")
             return
@@ -53,7 +50,6 @@ class ThinkingDataEngine(BaseEngine):
                     logger.info("Auto-login successful!")
                 except Exception as e:
                     logger.error(f"Auto-login failed: {e}")
-                    if not os.path.exists("output"): os.makedirs("output")
                     page.screenshot(path="output/login_failed.png")
             else:
                 logger.info("Active session detected, skipping login.")
@@ -65,17 +61,13 @@ class ThinkingDataEngine(BaseEngine):
         return self.run_sql_query(sql_text=sql, headless=kwargs.get('headless', True))
 
     def run_sql_query(self, sql_text=None, headless=True):
-        """
-        Full query logic including the requested 'Feedback' (status logging).
-        Ported from thinking-data-client/src/connector.py
-        """
         results_data = []
 
         with sync_playwright() as p:
             context = p.chromium.launch_persistent_context(
                 self.user_data_dir,
                 headless=headless,
-                slow_mo=100, # Increased slow_mo for stability
+                slow_mo=100,
                 permissions=["clipboard-read", "clipboard-write"]
             )
             page = context.new_page()
@@ -103,7 +95,6 @@ class ThinkingDataEngine(BaseEngine):
             try:
                 page.wait_for_load_state("networkidle", timeout=30000)
                 
-                # Auto-login if session expired
                 if "login" in page.url.lower() or page.query_selector('input[type="password"]'):
                     logger.info("Session expired. Performing auto-login...")
                     self._perform_login_logic(page)
@@ -138,7 +129,6 @@ class ThinkingDataEngine(BaseEngine):
                         success = False
 
                     if not success:
-                        logger.info("Using keyboard.insert_text fallback...")
                         editor.click()
                         page.keyboard.press("Control+A")
                         page.keyboard.press("Backspace")
@@ -180,8 +170,7 @@ class ThinkingDataEngine(BaseEngine):
                             with page.expect_download(timeout=120000) as download_info:
                                 download_btn.click()
                             download = download_info.value
-                            if not os.path.exists("output"): os.makedirs("output")
-                            download_path = os.path.join("output", download.suggested_filename)
+                            download_path = os.path.join(settings.OUTPUT_DIR, download.suggested_filename)
                             download.save_as(download_path)
                             results_data.append({"file_path": download_path, "type": "file"})
                             break
@@ -206,120 +195,57 @@ class ThinkingDataEngine(BaseEngine):
                         logger.error(f"SQL failed: {status_text.strip()}")
                         break
 
-                    # 4. Success but waiting for Export button (Common for 100% status or large files)
-                    # If we see 100% or "Processing", wait a significant amount of time
+                    # 4. Success but UI Lag
                     if "100%" in status_text or "处理中" in status_text:
-                        # For 258MB files, UI rendering can be extremely slow.
-                        # We wait in segments to check for the button.
-                        for _ in range(10): # Total extra 20s if needed
-                            download_btn_retry = page.query_selector('button:has-text("Download All"), button:has-text("全量下载"), .ant-btn:has-text("全量下载"), .ide-download-btn, a:has-text("下载")')
-                            if download_btn_retry:
-                                break
-                            page.wait_for_timeout(2000)
-                        
-                        if download_btn_retry:
-                            continue # Re-run loop to hit Download check at #1
+                        page.wait_for_timeout(2000)
+                        continue
 
                     page.wait_for_timeout(3000)
                     
                     # 5. Idle check
                     calc_ready = page.query_selector('button:has-text("Calculate"), button:has-text("计算")')
                     if calc_ready and calc_ready.is_enabled() and not results_data:
-                        # Check for presence of result area even if table isn't fully rendered
                         result_area = page.query_selector('.ant-tabs-tabpane-active, .ide-results-area, .ant-table-body')
                         if result_area and ("100%" in status_text or "条结果" in status_text or "Rows" in status_text):
-                             # Looks like it finished but UI is lagging. Wait more.
-                             logger.info("IDE seems finished but UI is lagging. Waiting 5s more...")
                              page.wait_for_timeout(5000)
                              continue
                         else:
                             logger.info("IDE idle. No data captured.")
                             break
 
-                if not results_data:
-                    if not os.path.exists("output"): os.makedirs("output")
-                    page.screenshot(path="output/final_error_debug.png")
-
             except Exception as e:
                 logger.error(f"Execution failed: {e}")
-                if not os.path.exists("output"): os.makedirs("output")
-                page.screenshot(path="output/exception_error_debug.png")
             
             context.close()
         return results_data
 
     def _perform_login_logic(self, page):
-        """Standard login logic with ported selectors, enhanced for China region."""
-        # 1. Find Inputs
         user_input = page.wait_for_selector('input[placeholder*="Account"], input[placeholder*="Username"], input[placeholder*="账号"], input[id="username"], input[type="text"]', timeout=15000)
         pass_input = page.wait_for_selector('input[placeholder*="Password"], input[placeholder*="密码"], input[id="password"], input[type="password"]', timeout=15000)
         
-        # 2. Fill Credentials
         user_input.fill("")
         user_input.type(self.username, delay=30)
         pass_input.fill("")
         pass_input.type(self.password, delay=30)
         
-        # 3. Handle Remember Me (Optional)
-        try:
-            remember_me = page.query_selector('label:has-text("7 day"), label:has-text("7天"), .ant-checkbox-wrapper, input[type="checkbox"]')
-            if remember_me:
-                # Check if it's already checked to avoid unchecking
-                is_checked = page.evaluate("(el) => el.classList.contains('ant-checkbox-wrapper-checked') || (el.querySelector('input') && el.querySelector('input').checked)", remember_me)
-                if not is_checked:
-                    remember_me.click()
-        except:
-            pass
-        
-        # 4. Click Login or Press Enter
         page.wait_for_timeout(1000)
         
         button_clicked = False
-        try:
-            # Try Playwright's most robust locators first
-            login_btn = page.get_by_role("button", name="登录").or_(page.get_by_text("登录", exact=True)).first
-            if login_btn.is_visible():
-                logger.info("Clicking '登录' button via robust locator...")
-                login_btn.click()
-                button_clicked = True
-        except:
-            pass
+        login_btn = page.get_by_role("button", name="登录").or_(page.get_by_text("登录", exact=True)).first
+        if login_btn.is_visible():
+            login_btn.click()
+            button_clicked = True
 
         if not button_clicked:
-            # Fallback to secondary selectors
-            login_btn_selectors = [
-                'button:has-text("登录")',
-                '.ant-btn-primary',
-                'button[type="submit"]',
-                'div.ant-btn-primary'
-            ]
+            login_btn_selectors = ['button:has-text("登录")', '.ant-btn-primary', 'button[type="submit"]']
             for selector in login_btn_selectors:
-                try:
-                    candidate = page.query_selector(selector)
-                    if candidate and candidate.is_visible():
-                        logger.info(f"Attempting to click login button: {selector}")
-                        candidate.click()
-                        button_clicked = True
-                        break
-                except: continue
+                candidate = page.query_selector(selector)
+                if candidate and candidate.is_visible():
+                    candidate.click()
+                    button_clicked = True
+                    break
 
-        # Ensure focus is on password field before pressing Enter as a final fallback
         page.wait_for_timeout(1000)
-        logger.info("Performing final submission check (Enter key fallback)...")
         pass_input.focus()
         page.keyboard.press("Enter")
-            
-        # 5. Wait for outcome (Resilient strategy)
-        try:
-            # Fix: CSS selector :has-text() is a Playwright extension and doesn't work in native document.querySelector
-            page.wait_for_function("""() => {
-                const buttons = Array.from(document.querySelectorAll('button, .ant-btn'));
-                const hasLoginButton = buttons.some(btn => btn.innerText.includes('登录') || btn.innerText.includes('Login'));
-                return !hasLoginButton || !window.location.href.toLowerCase().includes('login');
-            }""", timeout=20000)
-            logger.info("Login form submitted successfully.")
-        except Exception as e:
-            logger.warn(f"Wait for login transition timed out, but proceeding anyway.")
-            
-        # Final safety sleep for redirection
-        page.wait_for_timeout(3000)
+        page.wait_for_timeout(5000)

@@ -2,8 +2,9 @@ import pandas as pd
 import os
 from datetime import datetime
 from src.utils.logger import logger
+from src.config import settings
 
-def export_data(results, filename_prefix="data_export", formats=["xlsx"]):
+def export_data(results, filename_prefix="data_export", formats=["xlsx"], output_dir=None):
     """
     Export results to multiple formats (xlsx, csv, json).
     Returns a list of generated file paths.
@@ -11,9 +12,12 @@ def export_data(results, filename_prefix="data_export", formats=["xlsx"]):
     if results is None:
         return []
 
-    output_dir = "output"
+    # Use default export dir from settings if not specified
+    if output_dir is None:
+        output_dir = settings.EXPORT_DIR
+    
     if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
 
     # 1. Prepare DataFrame
     df = None
@@ -21,15 +25,15 @@ def export_data(results, filename_prefix="data_export", formats=["xlsx"]):
         df = results
     elif isinstance(results, list):
         # Check if it's the TA format (intercepted JSON)
-        last_item = results[-1]
-        if isinstance(last_item, dict):
+        if results and isinstance(results[-1], dict):
+            last_item = results[-1]
             headers = last_item.get("header", []) or last_item.get("headers", [])
             rows = last_item.get("rows", []) or last_item.get("results", [])
             if rows:
                 df = pd.DataFrame(rows, columns=headers)
     
     if df is None:
-        logger.warn("No data available to export.")
+        logger.warning("No data available to export.")
         return []
 
     # 2. Export to each requested format
@@ -53,9 +57,9 @@ def export_data(results, filename_prefix="data_export", formats=["xlsx"]):
                 logger.error(f"Unsupported format: {fmt}")
                 continue
                 
-            logger.info(f"✓ Data successfully exported to: {filepath}")
+            logger.info(f"Data successfully exported to: {filepath}")
             file_paths.append(filepath)
         except Exception as e:
-            logger.error(f"✗ Export to {fmt} failed: {e}")
+            logger.error(f"Export to {fmt} failed: {e}")
 
     return file_paths

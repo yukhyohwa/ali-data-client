@@ -1,142 +1,171 @@
-# FiveCross Unified Data Client
+# FiveCross Data Client
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10+-blue.svg" alt="Python Version">
-  <img src="https://img.shields.io/badge/Docker-Supported-blue?logo=docker" alt="Docker">
-  <img src="https://img.shields.io/badge/Engines-TA%20%7C%20ODPS%20%7C%20Holo-orange.svg" alt="Engines">
-  <img src="https://img.shields.io/badge/Security-Protected-green.svg" alt="Security">
-</p>
+A professional unified data extraction and analytics tool designed for FiveCross game operations. It automates data retrieval from **ThinkingData (TA)**, **AliCloud ODPS**, and **Hologres**, providing seamless integration with predictive analytics models.
 
-A powerful and unified data extraction framework for ThinkingData (TA), AliCloud ODPS (MaxCompute), and Hologres. This project is the evolved version of `ali-data-client` and `thinking-data-client`, integrated into a professional "Data Worker" service.
+## 📁 Architecture Overview
 
-## 🌟 Key Features
+FCDC follows a three-layer architecture to decouple business logic, execution configuration, and physical data.
 
-- **Multi-Engine Support**: 
-  - `ta`: ThinkingData (Supports **China** and **Global** regions with auto-login).
-  - `odps`: AliCloud MaxCompute (Supports China and Global regions).
-  - `holo`: AliCloud Hologres (Postgres-compatible).
-- **Intelligent Emailing**: 
-  - Send reports with multiple attachments to multiple recipients.
-  - Parse recipients directly from SQL comments (`-- MAILTO: ...`).
-- **Flexible Workflows**:
-  - **Scheduled Tasks**: Define multiple queries in a single JSON file and run them all at once.
-  - **Ad-hoc Queries**: Powerful CLI for single queries with data preview.
-- **Advanced Export (xlsx, csv, txt, json)**:
-  - Automatic format conversion for raw downloads (e.g., TA's CSV to Excel).
-- **Robustness**:
-  - Playwright-based smart login for TA (Auto-fill + Enter fallback).
-  - Session persistence via persistent browser context.
-- **Private SQL Library**: Securely integrated via Git Submodules.
-- **One-Click Setup**: Automated environment initialization.
+* **`main.py`**: The central entry point for all operations.
+* **`data/`**: Physical data storage (Git-ignored).
+  * `input/`: Raw CSV/Excel source files for analytics.
+  * `output/`: Unified directory for query results and prediction reports.
+* **`tasks/`**: Logic and Configuration.
+  * `templates/`: **[Git Submodule]** Linked to `fivecross-sql-lib`. Contains game-specific SQL templates organized by Game/Region.
+  * `configs/`: Operational parameters in JSON format.
+    * `scheduled/`: Automated batch jobs (Day/Week/Month).
+    * `adhoc/`: On-demand query configurations (successor to the old `queries` folder).
+    * `predict/`: Hyperparameters for prediction models (LTV, MAU).
+      * `input/`: Specific micro-configurations for individual analysis runs.
+* **`src/core/services/analytics/`**: Domain-specific algorithms (e.g., `LTVService`).
+* **`scripts/`**: Automation and environment management utilities.
 
-## 🛠 Setup & Initialization
+## 🚀 Getting Started
 
-### 1. Local Environment (Windows)
-We provide a one-click setup script to handle Python VENV, dependencies, and Playwright drivers.
-1.  **Clone the project**:
+### 1. Initial Setup (Windows)
+
+Run the setup script to initialize the Python environment and install dependencies:
+
+```powershell
+.\scripts\setup_env.bat
+```
+
+This script handles Virtualenv creation, pip dependency installation, and Playwright browser provisioning.
+
+### 2. Command Usage
+
+The CLI supports two primary modes: `fetch` (Data Extraction) and `predict` (Analytics).
+
+#### Data Fetching
+
+FCDC features a recursive search engine that locates files automatically within the `tasks/` directory.
+
+```bash
+# Execute a specific SQL file from templates/
+python main.py fetch --engine ta --file kb_jp_insignia_gacha.sql --region global
+
+# Execute a batch configuration from configs/
+python main.py fetch --task scheduled_multi_tasks.json
+
+# Interactive mode (provides data preview before export)
+python main.py fetch --engine odps --file ltv_stats.sql --interactive
+```
+
+#### Predictive Analytics
+
+Run advanced models against existing datasets. FCDC automatically validates and cleans data before processing.
+
+##### 1. LTV Prediction (Life Time Value)
+Professional projection using power-function retention fitting and ARPU decay models.
+
+*   **Command:**
     ```bash
-    git clone --recursive https://github.com/yukhyohwa/fivecross-data-client.git
-    cd fivecross-data-client
+    python main.py predict ltv --file history_stats.csv --ecpnu 55.0 --net_rate 0.35
     ```
-2.  **Run Setup**:
-    Double-click `scripts\setup.bat` or run `.\scripts\setup.bat`.
-3.  **Configure `.env`**:
-    - **ThinkingData**: Set `TA_USER_CN`/`TA_PASS_CN` or `TA_USER_GLOBAL`/`TA_PASS_GLOBAL`.
-    - **AliCloud**: Set `ALIYUN_AK_CN`/`ALIYUN_SK_CN` and endpoint variables.
-    - **Email**: Configure `SMTP_SERVER`, `SENDER_EMAIL`, and `SENDER_PASSWORD` (App Password).
+*   **Arguments:**
+    *   `--file`: Path to source data (supports `.csv`, `.xlsx`).
+    *   `--ecpnu`: Acquisition cost per new user (CPA).
+    *   `--net_rate`: Revenue sharing rate (e.g., 0.35 for 35%).
+*   **Required Data Format:**
+    | Column | Type | Description |
+    | :--- | :--- | :--- |
+    | `num_day` | int | The day index (1, 2, 3... 90). |
+    | `actual_rr` | float | Actual retention rate for that day (0.0 to 1.0). |
+    | `actual_arpu` | float | Actual ARPU for that day. |
 
-### 2. Docker (Containerized)
-Ideal for scheduled tasks on Linux servers.
+##### 2. MAU Forecasting (Monthly Active Users)
+Predict future growth based on historical trends of New (NUU), Old (OUU), and Returning (RUU) users.
+
+*   **Command:**
+    ```bash
+    python main.py predict mau --file monthly_data.xlsx --months 12 --growth 1.2
+    ```
+*   **Arguments:**
+    *   `--months`: Number of months to forecast (default: 12).
+    *   `--growth`: Growth factor applied to New Users (default: 1.0).
+*   **Required Data Format:**
+    | Column | Type | Description |
+    | :--- | :--- | :--- |
+    | `data_date` | date/str | The month identifier (e.g., `2024-01-01`). |
+    | `nuu` | int | Count of New User Units. |
+    | `ouu` | int | Count of Old User Units. |
+    | `ruu` | int | Count of Returning User Units. |
+    | `nuu_retention_rate` | float | (Optional) Historical retention rates for better accuracy. |
+
+*Note: The engine searches for input files in `data/input/`, `tasks/configs/predict/input/`, and `data/output/` sequentially.*
+
+#### Log Seeker (ID Lookup Tool)
+
+A high-performance utility to scan massive CSV logs for specific user IDs or identifiers:
+
 ```bash
-docker build -t fivecross-client .
-docker run --env-file .env fivecross-client --engine ta --sql "SELECT ..."
+# Automatically finds the latest CSV in data/output/ and searches for ID
+python tools\log_seek.py 30002074
+
+# Search for multiple IDs
+python tools\log_seek.py ID1 ID2 ID3
+
+# Specify a custom CSV path
+python tools\log_seek.py 30002074 --path data/output/my_log.csv
 ```
 
-## 📖 Usage
+### 3. Task Configuration (JSON Schema)
 
-### 1. Ad-hoc Queries (IDE & CLI)
-```bash
-# ThinkingData (Default: Global)
-python main.py --engine ta --region global --file queries/adhoc_ta.sql
+Batch tasks in `tasks/configs/` support various parameters for advanced automation:
 
-# AliCloud ODPS (Default: Global)
-python main.py --engine odps --region global --file queries/adhoc_ali.sql
+| Parameter   | Type   | Description                                     |
+| :---------- | :----- | :---------------------------------------------- |
+| `name`    | string | Prefix for the exported file.                   |
+| `engine`  | string | `ta`, `odps`, or `holo`.                  |
+| `region`  | string | `global` or `china`.                        |
+| `file`    | string | SQL filename (auto-searched in `templates/`). |
+| `sql`     | string | Direct SQL string (overrides `file`).         |
+| `mailto`  | string | Comma-separated emails for automated delivery.  |
+| `formats` | list   | Export types:`["xlsx", "csv", "json"]`.       |
 
-# Using the integrated SQL library
-python main.py --engine ta --file queries/sql-lib/games/slam_dunk/maxcompute/active_users.sql
+**Example `scheduled_multi_tasks.json`:**
 
-# Direct SQL strings
-python main.py --engine odps --sql "SELECT count(*) FROM ods_log_login WHERE day='20240101'"
-```
-
-### 2. Scheduled Multi-Tasks & Automation
-Edit `tasks/scheduled_multi_tasks.json` to define your suite of reports:
 ```json
-[
-  {
-    "name": "Daily_China_Stats",
-    "engine": "ta", "region": "china",
-    "file": "queries/daily_stats.sql",
-    "mailto": "boss@example.com",
+{
+    "name": "daily_revenue_report",
+    "engine": "ta",
+    "file": "daily_stats.sql",
+    "mailto": "admin@example.com, analyst@example.com",
     "formats": ["xlsx"]
-  }
-]
+}
 ```
-**Trigger the tasks:**
+
+### 4. Advanced Features
+
+#### Automated Email Delivery
+
+FCDC automatically parses email recipients from two sources:
+
+1. The `mailto` field in your JSON configuration.
+2. The **SQL Comment Header**: Adding `-- MAILTO: user@example.com` as the first line of your `.sql` file will automatically trigger an email dispatch upon task completion.
+
+#### Dynamic ID Lookup (SQL Templates)
+
+Leverage the **Git Submodule** in `tasks/templates/` to share common logic across projects. You can store your "ID Mapping" or "Static Metadata" SQLs in `common/` for reuse in multiple game-specific tasks.
+
+### 5. Windows Automation (Task Scheduler)
+
+To fully automate your workflow:
+
+1. Open **Windows Task Scheduler**.
+2. Create a **New Basic Task** and set your desired trigger (e.g., Daily 8:00 AM).
+3. For Action, select **Start a Program**.
+4. **Program/script**: Browse to your FCDC root and select `scripts\run_scheduled_tasks.bat`.
+5. **Start in**: Set this to the absolute path of your `fivecross-data-client` directory (Critical for path resolution).
+
+## 🔄 SQL Library Synchronization
+
+Since SQL templates are managed in a separate repository, synchronize the latest business logic via:
+
 ```bash
-# Windows (Manual)
-.\scripts\run_query.bat
-
-# Manual CLI
-python main.py --task tasks/scheduled_multi_tasks.json
+git submodule update --remote --merge
 ```
 
-## 🕒 Windows Task Scheduler (Automation)
-To run your reports automatically every day:
-1.  **Open Task Scheduler**: Press `Win + R`, type `taskschd.msc`, and hit Enter.
-2.  **Create Basic Task**:
-    - Name: `FiveCross_Daily_Report`
-    - Trigger: `Daily` (e.g., 08:30 AM)
-    - Action: `Start a program`
-3.  **Configure Action**:
-    - Program/script: `C:\Users\5xgames\Desktop\github\fivecross-data-client\scripts\run_query.bat`
-    - Start in (optional): `C:\Users\5xgames\Desktop\github\fivecross-data-client\`
-4.  **Security Options**: (Optional) In the Task Properties, check "Run whether user is logged on or not" and "Run with highest privileges" for better reliability.
+## 🛠️ Configuration
 
-### 3. Log Seeker (Tool)
-Quickly locate specific IDs within massive local CSV logs:
-```bash
-python tools/log_seek.py 78128243 90000730
-```
-
-## ⚙️ CLI Arguments
-| Argument | Description | Options |
-| :--- | :--- | :--- |
-| `--engine` | Output target engine | `ta`, `odps`, `holo` |
-| `--region` | Target region | `china`, `global` (Default) |
-| `--file` | Path to SQL file | e.g. `queries/adhoc.sql` |
-| `--sql` | Direct SQL string | Any valid SQL |
-| `--task` | Multi-task JSON path | e.g. `tasks/daily.json` |
-| `--mailto` | Recipient emails | Comma separated |
-| `--formats` | Export formats | `xlsx`, `csv`, `txt`, `json` |
-| `--show` | Display browser | TA engine only |
-| `--login` | Force login flow | TA engine only |
-
-## 🔒 Security & Privacy
-- **.env**: Never committed to Git. Local credentials stay local.
-- **submodules**: The `sql-lib` is a private repository. External users cannot access your SQL logic even if they have this tool's code.
-
-## 📝 SQL Directives
-Add recipients directly in your SQL files:
-```sql
--- MAILTO: analytics@example.com, boss@example.com
-SELECT * FROM ...
-```
-
-## 📂 Project Structure
-- `src/core/`: Engine logic (TA, ODPS, Holo).
-- `src/utils/`: Exporter, Mailer, and Logger utilities.
-- `queries/sql-lib/`: **[Private Submodule]** The shared internal SQL library.
-- `tools/`: Built-in utilities (Log Seeker, etc.).
-- `output/`: Generated reports and debug snapshots.
-- `scripts/setup.bat`: One-click initialization script.
+Manage your credentials and endpoints in the `.env` file at the project root. Refer to `.env.example` for the required schema.

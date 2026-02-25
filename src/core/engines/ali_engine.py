@@ -1,7 +1,7 @@
 import pandas as pd
 import psycopg2
 from odps import ODPS
-from src.core.base_engine import BaseEngine
+from src.core.engines.base_engine import BaseEngine
 from src.config import settings, DBConfig
 from src.utils.logger import logger
 

@@ -34,14 +34,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Playwright and its dependencies for Chromium
-RUN playwright install chromium
-RUN playwright install-deps chromium
+RUN python -m playwright install chromium
+RUN python -m playwright install-deps chromium
 
 # Copy the rest of the application
 COPY . .
 
-# Ensure output directory exists
-RUN mkdir -p output
+# Ensure data structure exists
+RUN mkdir -p data/output tasks/configs tasks/templates
 
 # Command to run when the container starts
 ENTRYPOINT ["python", "main.py"]
