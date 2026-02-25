@@ -49,6 +49,10 @@ python main.py fetch --task scheduled_multi_tasks.json
 
 # Interactive mode (provides data preview before export)
 python main.py fetch --engine odps --file ltv_stats.sql --interactive
+
+# Quick Ad-hoc execution from the designated adhoc folder
+python main.py fetch --engine ta --region global --file adhoc_ta.sql
+python main.py fetch --engine odps --region global --file adhoc_ali.sql
 ```
 
 #### Predictive Analytics
