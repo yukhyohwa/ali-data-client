@@ -40,3 +40,6 @@ tasks/templates/
 # --- Exceptions ---
 !*.example
 !.gitkeep
+
+
+scripts/sync_tasks.py
