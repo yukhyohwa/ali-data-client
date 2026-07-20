@@ -120,15 +120,15 @@ python tools\log_seek.py 300000046 --path data\output\fullitemuselogs_20260520_0
 
 Batch tasks in `tasks/configs/` support various parameters for advanced automation:
 
-| Parameter   | Type   | Description                                     |
-| :---------- | :----- | :---------------------------------------------- |
-| `name`    | string | Prefix for the exported file.                   |
-| `engine`  | string | `ta`, `odps`, or `holo`.                  |
-| `region`  | string | `global` or `china`.                        |
-| `file`    | string | SQL filename (auto-searched in `templates/`). |
-| `sql`     | string | Direct SQL string (overrides `file`).         |
-| `mailto`  | string | Comma-separated emails for automated delivery.  |
-| `formats` | list   | Export types:`["xlsx", "csv", "json"]`.       |
+| Parameter   | Type   | Description                                    |
+| :---------- | :----- | :--------------------------------------------- |
+| `name`    | string | Prefix for the exported file.                  |
+| `engine`  | string | `ta`, `odps`, or `holo`.                 |
+| `region`  | string | `global` or `china`.                       |
+| `file`    | string | SQL filename (auto-searched in`templates/`). |
+| `sql`     | string | Direct SQL string (overrides`file`).         |
+| `mailto`  | string | Comma-separated emails for automated delivery. |
+| `formats` | list   | Export types:`["xlsx", "csv", "json"]`.      |
 
 **Example `scheduled_multi_tasks.json`:**
 
@@ -234,12 +234,12 @@ Page title captured at failure is `加载中...` and any screenshot is pure whit
 **Root Cause:**
 The ThinkingData IDE is a heavy SPA that uses Monaco Editor (same engine as VS Code). This framework requires a **real browser rendering environment** to initialize:
 
-| Requirement                  | Headless Chromium       | Headed Chromium (off-screen) |
-| ---------------------------- | ----------------------- | ---------------------------- |
-| GPU rendering pipeline       | ❌ Unavailable          | ✅ Active                    |
-| `document.visibilityState` | ❌ Returns `"hidden"` | ✅ Returns `"visible"`     |
-| `requestAnimationFrame`    | ❌ Throttled / frozen   | ✅ Normal 60fps              |
-| Element layout dimensions    | ❌ May return 0         | ✅ Calculated correctly      |
+| Requirement                  | Headless Chromium      | Headed Chromium (off-screen) |
+| ---------------------------- | ---------------------- | ---------------------------- |
+| GPU rendering pipeline       | ❌ Unavailable         | ✅ Active                    |
+| `document.visibilityState` | ❌ Returns`"hidden"` | ✅ Returns`"visible"`      |
+| `requestAnimationFrame`    | ❌ Throttled / frozen  | ✅ Normal 60fps              |
+| Element layout dimensions    | ❌ May return 0        | ✅ Calculated correctly      |
 
 When any of these conditions are abnormal, the SPA's boot sequence stalls indefinitely at the loading screen. Adding `--show` works because it opens a real browser window that satisfies all requirements.
 
