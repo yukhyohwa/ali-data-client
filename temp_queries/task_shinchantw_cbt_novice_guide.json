@@ -1,0 +1,9 @@
+{
+  "id": "shinchantw_cbt_novice_guide",
+  "game": "shinchan_tw",
+  "db_type": "ta",
+  "region": "global",
+  "app_id": "18",
+  "sheet_name": "novice_guide",
+  "sql_file": "C:\\Users\\5xgames\\Desktop\\github\\shinchantw-cbt-report\\sql\\02_novice_guide_comparison.sql"
+}

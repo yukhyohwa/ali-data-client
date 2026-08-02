@@ -1,0 +1,9 @@
+{
+  "id": "shinchantw_cbt_system_growth",
+  "game": "shinchan_tw",
+  "db_type": "ta",
+  "region": "global",
+  "app_id": "18",
+  "sheet_name": "system_growth",
+  "sql_file": "C:\\Users\\5xgames\\Desktop\\github\\shinchantw-cbt-report\\sql\\08_character_system_growth.sql"
+}

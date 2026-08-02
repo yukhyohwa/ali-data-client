@@ -1,0 +1,9 @@
+{
+  "id": "shinchantw_cbt_theme_activity",
+  "game": "shinchan_tw",
+  "db_type": "ta",
+  "region": "global",
+  "app_id": "18",
+  "sheet_name": "theme_activity",
+  "sql_file": "C:\\Users\\5xgames\\Desktop\\github\\shinchantw-cbt-report\\sql\\07_theme_activity_participation.sql"
+}

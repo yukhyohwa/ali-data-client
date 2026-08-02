@@ -1,0 +1,10 @@
+{
+  "name": "shinchantw_cbt_ten_ten_stage_map_diagnostic_20260730_212903_750843",
+  "engine": "ta",
+  "region": "global",
+  "sql": "/* 10-10 关卡维表与实际事件映射诊断；窗口 2026-07-29 ~ 2026-07-30 */\nWITH StageMap AS (\n    SELECT\n        TRY_CAST(\"stage_id@stage_id\" AS BIGINT) AS stage_id,\n        MAX(\"stage_id@stage_name_real\") AS stage_name_real,\n        MAX(\"stage_id@stage_name_show\") AS stage_name_show\n    FROM ta_dim.dim_18_0_52765\n    GROUP BY 1\n)\nSELECT\n    m.stage_id AS \"关卡ID\",\n    m.stage_name_real AS \"真实关卡名\",\n    m.stage_name_show AS \"显示关卡名\",\n    COUNT(*) AS \"挑战次数\",\n    COUNT(DISTINCT v.\"#account_id\") AS \"挑战人数\"\nFROM ta.v_event_18 v\nINNER JOIN StageMap m\n  ON m.stage_id = COALESCE(TRY_CAST(v.a_rst[1].id AS BIGINT), TRY_CAST(v.stage_id AS BIGINT))\nWHERE v.\"#event_name\" = 'stage_fight'\n  AND TRY_CAST(v.a_rst[1].key AS INTEGER) = 1001\n  AND v.\"$part_date\" BETWEEN '2026-07-29' AND '2026-07-30'\n  AND m.stage_name_show LIKE '%:10-10'\nGROUP BY 1, 2, 3\nORDER BY 1;\n",
+  "formats": [
+    "csv"
+  ],
+  "show": false
+}

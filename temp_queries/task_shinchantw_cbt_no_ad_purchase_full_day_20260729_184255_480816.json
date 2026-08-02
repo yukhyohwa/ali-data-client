@@ -1,0 +1,10 @@
+{
+  "name": "shinchantw_cbt_no_ad_purchase_full_day_20260729_184255_480816",
+  "engine": "ta",
+  "region": "global",
+  "sql": "WITH tc_blacklist AS (\n  SELECT DISTINCT \"#user_id\" AS user_id FROM user_result_cluster_18 WHERE cluster_name IN ('internal_users','is_windows','is_water')\n), sg_blacklist AS (\n  SELECT DISTINCT \"#user_id\" AS user_id FROM user_result_cluster_13 WHERE cluster_name IN ('internal_users','is_windows','is_water')\n), sg_country AS (\n  SELECT DISTINCT \"#user_id\" AS user_id FROM user_result_cluster_13 WHERE cluster_name='fixed_country' AND tag_value='新加坡'\n), tc_android AS (\n  SELECT DISTINCT \"#user_id\" AS user_id FROM user_result_cluster_18 WHERE cluster_name='fixed_os' AND tag_value='Android'\n), sg_android AS (\n  SELECT DISTINCT \"#user_id\" AS user_id FROM user_result_cluster_13 WHERE cluster_name='fixed_os' AND tag_value='Android'\n)\nSELECT 'TC Android, 100501' AS cohort, MIN(v.\"#event_time\") AS first_purchase_time,\n  COUNT(*) AS purchase_orders,COUNT(DISTINCT v.\"#account_id\") AS buyers\nFROM ta.v_event_18 v LEFT JOIN tc_blacklist b ON v.\"#user_id\"=b.user_id INNER JOIN tc_android a ON v.\"#user_id\"=a.user_id\nWHERE v.\"$part_date\"='2026-07-29' AND v.\"$part_event\"='charge' AND b.user_id IS NULL\n  AND CAST(TRY_CAST(v.product_id AS DOUBLE) AS BIGINT)=100501\n  AND (v.sandbox IS NULL OR v.sandbox=FALSE) AND (v.is_freebuy IS NULL OR v.is_freebuy=FALSE)\nUNION ALL\nSELECT 'SG Android, 102901',MIN(v.\"#event_time\"),COUNT(*),COUNT(DISTINCT v.\"#account_id\")\nFROM ta.v_event_13 v LEFT JOIN sg_blacklist b ON v.\"#user_id\"=b.user_id INNER JOIN sg_country c ON v.\"#user_id\"=c.user_id INNER JOIN sg_android a ON v.\"#user_id\"=a.user_id\nWHERE v.\"$part_date\"='2026-05-08' AND v.\"$part_event\"='charge' AND b.user_id IS NULL\n  AND CAST(TRY_CAST(v.product_id AS DOUBLE) AS BIGINT)=102901\n  AND (v.sandbox IS NULL OR v.sandbox=FALSE) AND (v.is_freebuy IS NULL OR v.is_freebuy=FALSE);\n",
+  "formats": [
+    "csv"
+  ],
+  "show": true
+}
