@@ -1,0 +1,2 @@
+-- Mirror of jumptw-weekly-report/sql/adhoc/hisoka_arppu_stock_and_package_dau.sql
+-- The full query is maintained in the report repository; copy it here before execution.
