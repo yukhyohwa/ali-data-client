@@ -1,9 +1,0 @@
-{
-  "id": "shinchantw_cbt_active_duration",
-  "game": "shinchan_tw",
-  "db_type": "ta",
-  "region": "global",
-  "app_id": "18",
-  "sheet_name": "active_duration",
-  "sql_file": "C:\\Users\\5xgames\\Desktop\\github\\shinchantw-cbt-report\\sql\\03_active_duration_retention.sql"
-}

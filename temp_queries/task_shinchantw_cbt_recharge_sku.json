@@ -1,9 +1,0 @@
-{
-  "id": "shinchantw_cbt_recharge_sku",
-  "game": "shinchan_tw",
-  "db_type": "ta",
-  "region": "global",
-  "app_id": "18",
-  "sheet_name": "recharge_sku",
-  "sql_file": "C:\\Users\\5xgames\\Desktop\\github\\shinchantw-cbt-report\\sql\\04_recharge_sku_mix.sql"
-}

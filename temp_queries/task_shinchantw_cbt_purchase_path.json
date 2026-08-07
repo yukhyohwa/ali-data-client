@@ -1,9 +1,0 @@
-{
-  "id": "shinchantw_cbt_purchase_path",
-  "game": "shinchan_tw",
-  "db_type": "ta",
-  "region": "global",
-  "app_id": "18",
-  "sheet_name": "purchase_path",
-  "sql_file": "C:\\Users\\5xgames\\Desktop\\github\\shinchantw-cbt-report\\sql\\06_first_repeat_purchase_path.sql"
-}

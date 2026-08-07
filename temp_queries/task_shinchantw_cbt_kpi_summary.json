@@ -1,9 +1,0 @@
-{
-  "id": "shinchantw_cbt_kpi_summary",
-  "game": "shinchan_tw",
-  "db_type": "ta",
-  "region": "global",
-  "app_id": "18",
-  "sheet_name": "kpi_summary",
-  "sql_file": "C:\\Users\\5xgames\\Desktop\\github\\shinchantw-cbt-report\\sql\\01_cbt_kpi_summary.sql"
-}
