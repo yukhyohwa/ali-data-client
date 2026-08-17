@@ -1,0 +1,7 @@
+{
+  "name": "hisoka_minato_day1_cohort",
+  "engine": "ta",
+  "region": "global",
+  "file": "jump_card_pool_06_hisoka_minato_day1_cohort.sql",
+  "formats": ["csv"]
+}

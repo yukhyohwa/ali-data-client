@@ -1,0 +1,7 @@
+{
+  "name": "hisoka_shop1012_cardpool_association",
+  "engine": "ta",
+  "region": "global",
+  "file": "hisoka_shop1012_cardpool_association.sql",
+  "formats": ["csv"]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "hisoka_shop_1012_resource_audit",
+  "engine": "ta",
+  "region": "global",
+  "file": "hisoka_shop_1012_resource_audit.sql",
+  "formats": ["csv"]
+}
