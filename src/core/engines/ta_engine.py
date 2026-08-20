@@ -69,7 +69,7 @@ class ThinkingDataEngine(BaseEngine):
 
                 page = context.new_page()
                 logger.info(f"Navigating to login page: {self.base_url}")
-                page.goto(self.base_url)
+                page.goto(self.base_url, timeout=90000)
                 
                 try:
                     page.wait_for_load_state("networkidle", timeout=10000)
@@ -162,7 +162,7 @@ class ThinkingDataEngine(BaseEngine):
                 page.on("response", handle_response)
 
                 logger.info(f"Opening IDE page: {self.sql_url}")
-                page.goto(self.sql_url)
+                page.goto(self.sql_url, timeout=90000)
                 # Wait for the SPA to finish loading (networkidle = no network requests for 500ms)
                 try:
                     page.wait_for_load_state("networkidle", timeout=30000)
@@ -192,7 +192,7 @@ class ThinkingDataEngine(BaseEngine):
                             logger.warning("Login still required after session clear. Attempting login...")
 
                         self._perform_login_logic(page)
-                        page.goto(self.sql_url)
+                        page.goto(self.sql_url, timeout=90000)
                         try:
                             page.wait_for_load_state("networkidle", timeout=20000)
                         except:
