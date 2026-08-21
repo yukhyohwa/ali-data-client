@@ -2,6 +2,18 @@
 
 A professional unified data extraction and analytics tool designed for FiveCross game operations. It automates data retrieval from **ThinkingData (TA)**, **AliCloud ODPS**, and **Hologres**, providing seamless integration with predictive analytics models.
 
+## 🔌 Integration Methods
+
+This project combines three integration approaches, selected according to each platform's supported access method:
+
+| Platform | Implementation | General name |
+| --- | --- | --- |
+| ThinkingData (TA) | Uses Playwright to sign in to and operate the web SQL IDE, then reads query results from the browser session. | **Web UI automation** / **Browser automation** |
+| AliCloud MaxCompute (ODPS) | Uses AliCloud AccessKey credentials and the `pyodps` SDK to submit SQL and retrieve results. | **API/SDK integration** / **Cloud service SDK integration** |
+| AliCloud Hologres | Connects with `psycopg2` and executes SQL directly. | **Direct database connection** (Database Connectivity) |
+
+> In short: TA access is browser automation, while ODPS and Hologres use direct programmatic integrations rather than GUI automation.
+
 ## 📁 Architecture Overview
 
 FCDC follows a three-layer architecture to decouple business logic, execution configuration, and physical data.
