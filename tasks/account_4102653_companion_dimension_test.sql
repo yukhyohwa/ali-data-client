@@ -1,1 +1,0 @@
-SELECT * FROM ta_dim.dim_18_0_53443 LIMIT 1;

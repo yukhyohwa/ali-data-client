@@ -1,3 +1,0 @@
-[submodule "tasks/templates"]
-	path = tasks/templates
-	url = https://github.com/yukhyohwa/fivecross-sql-lib.git

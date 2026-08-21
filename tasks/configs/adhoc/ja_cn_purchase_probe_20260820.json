@@ -1,0 +1,8 @@
+{
+  "name": "ja_cn_purchase_probe_20260820",
+  "engine": "ta",
+  "region": "global",
+  "sql": "SELECT \"$part_date\" AS date, COUNT(*) AS event_rows, COUNT_IF(\"$part_event\" = 'PURCHASE') AS purchase_rows FROM ta.v_event_4 WHERE \"$part_date\" = '2026-08-20' GROUP BY 1",
+  "formats": ["csv"],
+  "show": false
+}
