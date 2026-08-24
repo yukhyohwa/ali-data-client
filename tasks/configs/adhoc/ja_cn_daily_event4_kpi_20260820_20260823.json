@@ -1,0 +1,8 @@
+{
+  "name": "ja_cn_daily_event4_kpi_20260820_20260823",
+  "engine": "ta",
+  "region": "china",
+  "file": "ja_cn_daily_event4_kpi_20260820_20260823.sql",
+  "formats": ["csv"],
+  "show": false
+}
