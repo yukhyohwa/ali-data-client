@@ -11,6 +11,7 @@ data/output/
 data/input/
 !data/.gitkeep
 ta_session/
+ta_session_hof_coin_20260828/
 
 # --- Artifacts & Logs ---
 *.xlsx
