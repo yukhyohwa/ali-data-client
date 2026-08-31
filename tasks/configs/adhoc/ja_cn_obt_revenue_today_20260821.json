@@ -1,8 +1,0 @@
-{
-  "name": "ja_cn_revenue_today_event4_20260821",
-  "engine": "ta",
-  "region": "china",
-  "sql": "WITH UserBlacklist AS (\n    SELECT DISTINCT \"#varchar_id\" AS account_id\n    FROM user_result_cluster_4\n    WHERE cluster_name IN ('internal_users')\n),\nPayEvents AS (\n    SELECT\n        v.\"#account_id\" AS account_id,\n        CAST(v.\"$part_date\" AS DATE) AS pay_date,\n        CAST(v.payload.curamt AS DOUBLE) AS source_amount,\n        v.payload.cur AS currency,\n        COALESCE(ex.exchange, 1.0) AS exchange_rate\n    FROM ta.v_event_4 v\n    LEFT JOIN ta_dim.ta_exchange ex\n      ON v.\"$part_date\" = ex.ex_date\n     AND v.payload.cur = ex.currency\n    LEFT JOIN UserBlacklist ub ON v.\"#account_id\" = ub.account_id\n    WHERE v.\"$part_date\" = '2026-08-21'\n      AND v.\"$part_event\" = 'PURCHASE'\n      AND (v.payload.validationtype IS NULL OR v.payload.validationtype <> 'SANDBOX_RECEIPT')\n      AND ub.account_id IS NULL\n      AND CAST(v.payload.curamt AS DOUBLE) > 0\n),\nAgg AS (\n    SELECT pay_date,\n           SUM(source_amount / exchange_rate) AS revenue_usd,\n           COUNT(*) AS valid_orders,\n           COUNT(DISTINCT account_id) AS payers,\n           COUNT(DISTINCT currency) AS currencies,\n           MAX(exchange_rate) AS max_exchange_rate\n    FROM PayEvents\n    GROUP BY 1\n)\nSELECT CAST(DATE '2026-08-21' AS VARCHAR) AS date,\n       ROUND(COALESCE(revenue_usd, 0.0), 2) AS revenue_usd,\n       COALESCE(valid_orders, 0) AS valid_orders,\n       COALESCE(payers, 0) AS payers,\n       COALESCE(currencies, 0) AS currencies,\n       max_exchange_rate\nFROM Agg\nRIGHT JOIN (SELECT DATE '2026-08-21' AS pay_date) d ON Agg.pay_date = d.pay_date",
-  "formats": ["csv"],
-  "show": false
-}

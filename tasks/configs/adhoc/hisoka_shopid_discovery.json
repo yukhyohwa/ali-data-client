@@ -1,7 +1,0 @@
-{
-  "name": "hisoka_shopid_discovery",
-  "engine": "ta",
-  "region": "global",
-  "file": "hisoka_shopid_discovery.sql",
-  "formats": ["csv"]
-}

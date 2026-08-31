@@ -1,7 +1,0 @@
-{
-    "name": "test_task",
-    "engine": "holo",
-    "region": "global",
-    "sql": "SELECT 1 as test",
-    "formats": ["csv"]
-}

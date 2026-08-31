@@ -1,7 +1,0 @@
-{
-  "name": "hisoka_active_shop_daily",
-  "engine": "ta",
-  "region": "global",
-  "file": "hisoka_active_shop_daily.sql",
-  "formats": ["csv"]
-}

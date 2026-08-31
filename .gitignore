@@ -10,8 +10,7 @@ env/
 data/output/
 data/input/
 !data/.gitkeep
-ta_session/
-ta_session_hof_coin_20260828/
+ta_session*/
 
 # --- Artifacts & Logs ---
 *.xlsx
@@ -32,6 +31,7 @@ Thumbs.db
 # --- Task Execution (Ignore runtime configs) ---
 # We keep templates, but ignore user-generated ad-hoc tasks
 tasks/adhoc/
+tasks/configs/adhoc/
 tasks/jobs/
 tasks/systems/
 tasks/configs/*.json

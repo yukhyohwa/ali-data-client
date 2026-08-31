@@ -1,8 +1,0 @@
-{
-  "name": "ja_cn_revenue_today_20260821",
-  "engine": "ta",
-  "region": "global",
-  "sql": "WITH UserBlacklist AS (\n    SELECT DISTINCT \"#varchar_id\" AS \"#account_id\"\n    FROM user_result_cluster_4\n    WHERE cluster_name IN ('internal_users')\n),\nRawPayEvents AS (\n    SELECT\n        v.\"#account_id\",\n        CAST(v.payload.curamt AS DOUBLE) AS pay_amount_rmb,\n        v.\"$part_date\" AS pay_date,\n        HOUR(CAST(v.\"#event_time\" AS TIMESTAMP)) AS event_hour\n    FROM ta.v_event_4 v\n    WHERE v.\"$part_date\" = '2026-08-21'\n      AND v.\"$part_event\" = 'PURCHASE'\n      AND (v.payload.validationtype IS NULL OR v.payload.validationtype <> 'SANDBOX_RECEIPT')\n),\nValidPayEvents AS (\n    SELECT e.*\n    FROM RawPayEvents e\n    LEFT JOIN UserBlacklist ub ON e.\"#account_id\" = ub.\"#account_id\"\n    WHERE ub.\"#account_id\" IS NULL\n)\nSELECT\n    pay_date AS \"date\",\n    ROUND(SUM(pay_amount_rmb), 2) AS \"revenue_rmb\",\n    COUNT(*) AS \"valid_orders\",\n    COUNT(DISTINCT \"#account_id\") AS \"payers\",\n    MAX(event_hour) AS \"latest_order_hour\"\nFROM ValidPayEvents\nGROUP BY 1\nORDER BY 1",
-  "formats": ["csv"],
-  "show": false
-}

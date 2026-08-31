@@ -1,7 +1,0 @@
-{
-  "name": "hisoka_minato_first5d_user_daily",
-  "engine": "ta",
-  "region": "global",
-  "file": "jump_card_pool_04_hisoka_minato_first5d_user_daily.sql",
-  "formats": ["csv"]
-}

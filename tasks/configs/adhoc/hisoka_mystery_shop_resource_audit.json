@@ -1,7 +1,0 @@
-{
-  "name": "hisoka_mystery_shop_resource_audit",
-  "engine": "ta",
-  "region": "global",
-  "file": "jump_card_pool_05_mystery_shop_resource_audit.sql",
-  "formats": ["csv"]
-}
